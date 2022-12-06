@@ -1,49 +1,116 @@
-import './Home.css'
+import './Home.css';
+
+import { useEffect,useState, useRef } from 'react';
+
 import Product from './Product';
 
+import { 
+    filterProductsByCategories ,
+    filterProductsByBrand,
+    filterProductsByTitile,
+    filterProductsByPrice,
+    filterProductsDefaultBrandAndPrice
+} from '../src/features/productSlice';
+
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+
+
 function Home() {
+
+    const dispatch = useDispatch()
+    const { products } = useSelector((state) => state.productDetails)
+
+
+    const inputText = useRef();
+    const [ price, setPrice ] = useState(40);
+
+    const handleInput = (e)=>{
+        setPrice(e.target.value);
+        dispatch(filterProductsByPrice(e.target.value))
+      }
+
+    useEffect(() => {
+        // by default showing only brand values data.
+        dispatch(filterProductsDefaultBrandAndPrice({brand: 'Brand', price: 40}))
+    }, [dispatch])
+
+
+    const onCategoryClciked = (type) => {
+        dispatch(filterProductsByCategories(type))
+    }
+
+    const onDWBrandClciked = (brandValue) => {
+        dispatch(filterProductsByBrand(brandValue))
+    }
+
+    const onCBBrandClciked = (checkedValue) => {
+
+        if(checkedValue.checked) {
+            dispatch(filterProductsByBrand(checkedValue.value))
+        } else {
+            dispatch(filterProductsByBrand('Brand'))
+        }
+    }
+
+    const onSearchBoxChange = () => {
+
+        if(inputText.current.value === '') {
+            dispatch(filterProductsByBrand('Brand'))
+        } else {
+            dispatch(filterProductsByTitile(inputText.current.value))
+        }
+    }
+
+
+
   return (
     <div className='container'>
 
         <div className="leftMenu">
-            <input type='text' placeholder='Search...' className='search'/>
+            <input ref={inputText} type='text' placeholder='Search...' className='search' onChange={onSearchBoxChange}/>
             <h1>Categories</h1>
             <div className="cats">
-                <span className="cat">All</span>
-                <span className="cat">Dress</span>
-                <span className="cat">Sport</span>
-                <span className="cat">Luxury</span>
-                <span className="cat">Casual</span>
+                <span className="cat" onClick={() => onCategoryClciked('All')}>All</span>
+                <span className="cat" onClick={() => onCategoryClciked('Dress')}>Dress</span>
+                <span className="cat" onClick={() => onCategoryClciked('Sport')}>Sport</span>
+                <span className="cat" onClick={() => onCategoryClciked('Luxury')}>Luxury</span>
+                <span className="cat" onClick={() => onCategoryClciked('Casual')}>Casual</span>
             </div>
             <div className="brands">
                 <div className='brand'>
-                <input className='checkbox' type="checkbox" value='Brand'/>
+                <input 
+                className='checkbox' 
+                type="checkbox" 
+                value='Brand' 
+                onChange={(e) => onCBBrandClciked(e.target)}
+                />
                 <label className='checkBoxTitle' for="brand">Brand</label>
                 </div>
                
                <div className='brand'>
-               <input className='checkbox' type="checkbox" value='Non-Brand'/>
+               <input className='checkbox' type="checkbox" value='Non-brand' onChange={(e) => onCBBrandClciked(e.target)}/>
                 <label className='checkBoxTitle' for="nonbrand">Non-Brand</label>
                </div>
             </div>
 
             <div className='dropDown'>
-                <select>
-                    <option value="brand">Brand</option>
-                    <option value="non-brand">Non-brand</option>
+                <select type='dropdown' onChange={(e) => onDWBrandClciked(e.target.value)}>
+                    <option value="Brand">Brand</option>
+                    <option value="Non-brand">Non-brand</option>
                 </select>
             </div>
 
             <h1>Maximum Price</h1>
             <div className="price">
-                <input type="range" className='priceRange' />
-                <span className="priceValue">$40</span>
+                <input type="range" className='priceRange' onInput={handleInput}/>
+                <span className="priceValue">${price}</span>
             </div>
         </div>
         <div className="mainContent">
             <div className='products'>
-                {data.map((item) => {
-                    return <Product item={item}/>
+                {products.map((item) => {
+                    return <Product key={item.id} item={item}/>
                 })}
             </div>
         </div>
@@ -53,58 +120,3 @@ function Home() {
 }
 
 export default Home
-
-
-
-
-const data = [
-    {
-      id: 1,
-      name: "Invicta Men's Pro Diver",
-      img: "https://m.media-amazon.com/images/I/71e04Q53xlL._AC_UY879_.jpg",
-      price: 74,
-      cat: "Dress",
-    },
-    {
-      id: 11,
-      name: "Invicta Men's Pro Diver 2",
-      img: "https://m.media-amazon.com/images/I/71e04Q53xlL._AC_UY879_.jpg",
-      price: 74,
-      cat: "Dress",
-    },
-    {
-      id: 2,
-      name: "Timex Men's Expedition Scout ",
-      img: "https://m.media-amazon.com/images/I/91WvnZ1g40L._AC_UY879_.jpg",
-      price: 40,
-      cat: "Sport",
-    },
-    {
-      id: 3,
-      name: "Breitling Superocean Heritage",
-      img: "https://m.media-amazon.com/images/I/61hGDiWBU8L._AC_UY879_.jpg",
-      price: 200,
-      cat: "Luxury",
-    },
-    {
-      id: 4,
-      name: "Casio Classic Resin Strap ",
-      img: "https://m.media-amazon.com/images/I/51Nk5SEBARL._AC_UY879_.jpg",
-      price: 16,
-      cat: "Sport",
-    },
-    {
-      id: 5,
-      name: "Garmin Venu Smartwatch ",
-      img: "https://m.media-amazon.com/images/I/51kyjYuOZhL._AC_SL1000_.jpg",
-      price: 74,
-      cat: "Casual",
-    },
-    {
-        id: 6,
-        name: "Breitling Superocean Heritage",
-        img: "https://m.media-amazon.com/images/I/61hGDiWBU8L._AC_UY879_.jpg",
-        price: 100,
-        cat: "Luxury",
-      },
-  ];
